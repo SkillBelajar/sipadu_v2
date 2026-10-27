@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\LogUserActivityJob;
 use App\Models\LaporanSarpras;
 use App\Models\Pengajuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -49,7 +51,9 @@ it('kabid can verify sarpras report', function () {
     expect($laporan->fresh()->status_verifikasi)->toBe('terverifikasi');
 });
 
-it('activity log is created when kabid verifies sarpras', function () {
+it('activity log job is created when kabid verifies sarpras', function () {
+    Queue::fake();
+
     $kabid = User::factory()->create(['role' => 'kabid']);
     $laporan = LaporanSarpras::factory()->for(User::factory())->create([
         'status_verifikasi' => 'pending',
@@ -59,9 +63,10 @@ it('activity log is created when kabid verifies sarpras', function () {
         'status_verifikasi' => 'terverifikasi',
     ]);
 
-    expect(\App\Models\ActivityLog::where('user_id', $kabid->id)
-        ->where('action', 'sarpras_diverifikasi')
-        ->exists())->toBeTrue();
+    Queue::assertPushed(LogUserActivityJob::class, function ($job) use ($kabid) {
+        return $job->userId === $kabid->id
+            && $job->action === 'sarpras_diverifikasi';
+    });
 });
 
 it('sekolah cannot access kabid routes', function () {

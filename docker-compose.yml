@@ -5,6 +5,9 @@ services:
       dockerfile: .docker/Dockerfile
     container_name: sipadu_app
     working_dir: /var/www/html
+    command: php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8000 --workers=4 --task-workers=4 --max-requests=500
+    ports:
+      - "8000:8000"
     volumes:
       - .:/var/www/html:cached
     depends_on:
@@ -13,11 +16,26 @@ services:
     networks:
       - sipadu
 
+  queue-worker:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    container_name: sipadu_queue
+    working_dir: /var/www/html
+    command: php artisan queue:work redis --sleep=3 --tries=3
+    volumes:
+      - .:/var/www/html:cached
+    depends_on:
+      - redis
+      - db
+    networks:
+      - sipadu
+
   web:
     image: nginx:alpine
     container_name: sipadu_web
     ports:
-      - "8000:80"
+      - "8001:80"
     volumes:
       - .:/var/www/html:cached
       - .docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\LogUserActivityJob;
 use App\Models\ActivityLog;
 use App\Models\DokumenPengajuan;
 use App\Models\Pengajuan;
@@ -34,11 +35,11 @@ class VerifikasiController extends Controller
                 $pengajuan->update(['status' => 'disetujui']);
             }
 
-            ActivityLog::create([
-                'user_id' => $request->user()->id,
-                'action' => 'verifikasi_dokumen',
-                'description' => "Verifikator memverifikasi dokumen ID {$dokumen->id} sebagai {$validated['status']}",
-            ]);
+            LogUserActivityJob::dispatch(
+                userId: $request->user()->id,
+                action: 'verifikasi_dokumen',
+                description: "Verifikator memverifikasi dokumen ID {$dokumen->id} sebagai {$validated['status']}",
+            );
 
             return response()->json([
                 'data' => $dokumen->refresh(),

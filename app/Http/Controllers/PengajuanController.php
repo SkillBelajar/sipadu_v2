@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\LogUserActivityJob;
+use App\Models\ActivityLog;
 use App\Models\DokumenPengajuan;
 use App\Models\Pengajuan;
 use App\Models\SyaratLayanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class PengajuanController extends Controller
@@ -55,11 +56,11 @@ class PengajuanController extends Controller
                 ]);
             }
 
-            \App\Models\ActivityLog::create([
-                'user_id' => $request->user()->id,
-                'action' => 'created_pengajuan',
-                'description' => "Pengajuan #{$pengajuan->id} dibuat untuk {$layanan->nama}",
-            ]);
+            LogUserActivityJob::dispatch(
+                userId: $request->user()->id,
+                action: 'created_pengajuan',
+                description: "Pengajuan #{$pengajuan->id} dibuat untuk {$layanan->nama}",
+            );
 
             return response()->json([
                 'data' => $pengajuan->load('dokumen'),

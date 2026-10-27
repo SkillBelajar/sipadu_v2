@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\LogUserActivityJob;
 use App\Models\DokumenPengajuan;
 use App\Models\Pengajuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -63,7 +65,9 @@ it('one revisi doc sets parent pengajuan to revisi', function () {
     expect($pengajuan->refresh()->status)->toBe('revisi');
 });
 
-it('verification action is logged', function () {
+it('verification action is logged via queue job', function () {
+    Queue::fake();
+
     $verifikator = User::factory()->create(['role' => 'verifikator']);
     $pengajuan = Pengajuan::factory()->create(['status' => 'pending']);
     $dokumen = DokumenPengajuan::factory()->create([
@@ -76,9 +80,10 @@ it('verification action is logged', function () {
         'catatan_verifikator' => 'OK',
     ]);
 
-    expect(\App\Models\ActivityLog::where('user_id', $verifikator->id)
-        ->where('action', 'like', '%verifikasi%')
-        ->exists())->toBeTrue();
+    Queue::assertPushed(LogUserActivityJob::class, function ($job) use ($verifikator) {
+        return $job->userId === $verifikator->id
+            && $job->action === 'verifikasi_dokumen';
+    });
 });
 
 it('non-verifikator roles get 403', function () {

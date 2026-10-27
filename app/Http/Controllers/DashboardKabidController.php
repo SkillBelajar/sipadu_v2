@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\LogUserActivityJob;
 use App\Models\ActivityLog;
 use App\Models\LaporanSarpras;
 use App\Models\Pengajuan;
@@ -45,11 +46,11 @@ class DashboardKabidController extends Controller
                 'status_verifikasi' => $validated['status_verifikasi'],
             ]);
 
-            ActivityLog::create([
-                'user_id' => $request->user()->id,
-                'action' => 'sarpras_diverifikasi',
-                'description' => "Kabid verifikasi laporan sarpras ID {$laporan_sarpras->id} ({$laporan_sarpras->nama_ruangan})",
-            ]);
+            LogUserActivityJob::dispatch(
+                userId: $request->user()->id,
+                action: 'sarpras_diverifikasi',
+                description: "Kabid verifikasi laporan sarpras ID {$laporan_sarpras->id} ({$laporan_sarpras->nama_ruangan})",
+            );
 
             return response()->json([
                 'data' => $laporan_sarpras->refresh(),

@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\LogUserActivityJob;
 use App\Models\LaporanSarpras;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -58,7 +60,8 @@ it('sekolah can access sarpras index and sees only own reports', function () {
     }
 });
 
-it('activity log is created when sekolah reports sarpras', function () {
+it('activity log job is dispatched when sekolah reports sarpras', function () {
+    Queue::fake();
     Storage::fake('public');
 
     $sekolah = User::factory()->create(['role' => 'sekolah']);
@@ -69,9 +72,10 @@ it('activity log is created when sekolah reports sarpras', function () {
         'foto' => UploadedFile::fake()->create('ruangan.jpg', 1024, 'image/jpeg'),
     ]);
 
-    expect(\App\Models\ActivityLog::where('user_id', $sekolah->id)
-        ->where('action', 'laporan_sarpras_dibuat')
-        ->exists())->toBeTrue();
+    Queue::assertPushed(LogUserActivityJob::class, function ($job) use ($sekolah) {
+        return $job->userId === $sekolah->id
+            && $job->action === 'laporan_sarpras_dibuat';
+    });
 });
 
 it('admin cannot submit sarpras', function () {

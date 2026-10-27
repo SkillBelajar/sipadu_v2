@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\LogUserActivityJob;
 use App\Models\ActivityLog;
 use App\Models\LaporanSarpras;
 use Illuminate\Http\Request;
@@ -40,11 +41,11 @@ class LaporanSarprasController extends Controller
                 'status_verifikasi' => 'pending',
             ]);
 
-            ActivityLog::create([
-                'user_id' => $request->user()->id,
-                'action' => 'laporan_sarpras_dibuat',
-                'description' => "Sekolah melaporkan kondisi ruangan {$validated['nama_ruangan']}",
-            ]);
+            LogUserActivityJob::dispatch(
+                userId: $request->user()->id,
+                action: 'laporan_sarpras_dibuat',
+                description: "Sekolah melaporkan kondisi ruangan {$validated['nama_ruangan']}",
+            );
 
             return response()->json([
                 'data' => $laporan,

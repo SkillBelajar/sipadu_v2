@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\ActivityLog;
+use App\Jobs\LogUserActivityJob;
 use Illuminate\Database\Eloquent\Model;
 
 trait LogsActivity
@@ -21,10 +21,10 @@ trait LogsActivity
             return;
         }
 
-        ActivityLog::create([
-            'user_id' => $user->id,
-            'action' => $action.'_'.class_basename($model),
-            'description' => "{$action} ".class_basename($model)." #{$model->getKey()}",
-        ]);
+        LogUserActivityJob::dispatch(
+            userId: $user->id,
+            action: $action.'_'.class_basename($model),
+            description: "{$action} ".class_basename($model)." #{$model->getKey()}",
+        );
     }
 }

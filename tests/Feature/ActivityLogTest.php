@@ -1,13 +1,16 @@
 <?php
 
-use App\Models\ActivityLog;
+use App\Jobs\LogUserActivityJob;
 use App\Models\Layanan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
-it('activity log is created when admin creates layanan', function () {
+it('activity log job is dispatched when admin creates layanan', function () {
+    Queue::fake();
+
     $admin = User::factory()->create(['role' => 'admin']);
 
     $this->actingAs($admin)->post('/admin/layanan', [
@@ -15,17 +18,17 @@ it('activity log is created when admin creates layanan', function () {
         'syarat' => [['nama_syarat' => 'KTP']],
     ]);
 
-    expect(ActivityLog::count())->toBeGreaterThanOrEqual(1);
-    expect(ActivityLog::where('user_id', $admin->id)->exists())->toBeTrue();
-    expect(ActivityLog::where('action', 'created_Layanan')->exists())->toBeTrue();
-    expect(ActivityLog::where('description', 'like', '%Layanan %')->exists())->toBeTrue();
+    Queue::assertPushed(LogUserActivityJob::class, function ($job) use ($admin) {
+        return $job->userId === $admin->id
+            && $job->action === 'created_Layanan';
+    });
 });
 
 it('activity log stores user_id, action, and description', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $layanan = Layanan::factory()->create(['nama' => 'Layanan B']);
 
-    $log = ActivityLog::create([
+    $log = \App\Models\ActivityLog::create([
         'user_id' => $admin->id,
         'action' => 'created_layanan',
         'description' => 'Admin created Layanan #'.$layanan->id,

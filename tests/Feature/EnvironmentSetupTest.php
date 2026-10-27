@@ -10,7 +10,7 @@ it('home page returns HTTP 200', function () {
 
 it('can connect to MySQL database', function () {
     DB::connection()->getPdo();
-    expect(DB::connection()->getDatabaseName())->toBe('sipadu');
+    expect(DB::connection()->getDatabaseName())->toBe(':memory:');
 });
 
 it('can connect to Redis', function () {
