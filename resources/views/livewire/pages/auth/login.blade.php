@@ -20,7 +20,16 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $user = auth()->user();
+
+        $route = match ($user->role) {
+            'admin' => '/admin/dashboard',
+            'verifikator' => '/verifikator/dashboard',
+            'kabid' => '/kabid/dashboard',
+            default => '/sekolah/dashboard',
+        };
+
+        $this->redirect($route, navigate: true);
     }
 }; ?>
 
