@@ -22,6 +22,12 @@ Route::post('/sekolah/pengajuan', [\App\Http\Controllers\PengajuanController::cl
 Route::patch('/verifikator/dokumen/{dokumen_pengajuan}', [\App\Http\Controllers\VerifikasiController::class, 'update'])
     ->middleware(['auth', 'role:verifikator']);
 
+Route::get('/sekolah/sarpras', [\App\Http\Controllers\LaporanSarprasController::class, 'index'])
+    ->middleware(['auth', 'role:sekolah']);
+
+Route::post('/sekolah/sarpras', [\App\Http\Controllers\LaporanSarprasController::class, 'store'])
+    ->middleware(['auth', 'role:sekolah']);
+
 Route::get('/sekolah/dashboard', function () {
     return 'sekolah dashboard';
 })->middleware(['auth', 'role:sekolah']);

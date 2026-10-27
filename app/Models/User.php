@@ -57,6 +57,11 @@ class User extends Authenticatable
         return $this->hasMany(Pengajuan::class);
     }
 
+    public function laporanSarpras(): HasMany
+    {
+        return $this->hasMany(LaporanSarpras::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

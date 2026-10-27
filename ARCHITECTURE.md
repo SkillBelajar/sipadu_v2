@@ -17,4 +17,4 @@
 users, layanan, syarat_layanan, pengajuan, dokumen_pengajuan, laporan_sarpras, activity_logs
 
 ## Current Phase
-Slice 5 — Workflow Verifikasi Dokumen
+Slice 6 — Modul Pelaporan Sarpras
