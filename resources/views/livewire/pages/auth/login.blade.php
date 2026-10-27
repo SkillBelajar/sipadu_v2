@@ -63,6 +63,8 @@ new #[Layout('layouts.guest')] class extends Component
                 </a>
             @endif
 
+            <div class="ml-auto text-xs text-gray-400 mr-4">v{{ config('app.version', '1.0.0') }}</div>
+
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>
