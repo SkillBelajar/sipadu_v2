@@ -40,6 +40,15 @@ Route::get('/kabid/dashboard', function () {
     return 'kabid dashboard';
 })->middleware(['auth', 'role:kabid']);
 
+Route::get('/kabid/pengajuan', [\App\Http\Controllers\DashboardKabidController::class, 'pengajuan'])
+    ->middleware(['auth', 'role:kabid']);
+
+Route::get('/kabid/sarpras', [\App\Http\Controllers\DashboardKabidController::class, 'sarpras'])
+    ->middleware(['auth', 'role:kabid']);
+
+Route::patch('/kabid/sarpras/{laporan_sarpras}/verify', [\App\Http\Controllers\DashboardKabidController::class, 'verify'])
+    ->middleware(['auth', 'role:kabid']);
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
