@@ -3,9 +3,10 @@
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-it('home page returns HTTP 200', function () {
+it('home page redirects to login', function () {
     $response = $this->get('/');
-    expect($response->status())->toBe(200);
+    expect($response->status())->toBe(302);
+    $response->assertRedirect('/login');
 });
 
 it('can connect to MySQL database', function () {
